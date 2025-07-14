@@ -7,21 +7,42 @@ import (
 
 	"github.com/Lovodia/ProxyAPI/internal/client"
 	"github.com/Lovodia/ProxyAPI/internal/handlers"
+	"github.com/Lovodia/ProxyAPI/pkg/config"
+	"github.com/Lovodia/ProxyAPI/pkg/logger"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	logger.Init()
 
-	BaseURL := os.Getenv("API_BASE_URL")
-	if BaseURL == "" {
-		BaseURL = "https://jsonplaceholder.typicode.com/"
+	_ = godotenv.Load(".env")
+
+	cfg, err := config.LoadConfig("config.yaml")
+	if err != nil {
+		logger.Error.Println("failed to load config.yaml", err)
 	}
 
-	httpClient := client.NewClient(BaseURL)
+	apiURL := cfg.API.BaseURL
+	if envURL := os.Getenv("API_BASE_URL"); envURL != "" {
+		apiURL = envURL
+	}
+	if apiURL == "" {
+		apiURL = "https://jsonplaceholder.typicode.com/"
+	}
 
-	h := handlers.NewHandler(httpClient)
+	port := cfg.Server.Port
+	if envPort := os.Getenv("PORT"); envPort != "" {
+		port = envPort
+	}
+	if port == "" {
+		port = "8080"
+	}
+
+	httpClient := client.NewClient(apiURL)
+	h := handlers.New(httpClient)
 
 	http.HandleFunc("/post", h.GetPostHandler)
 
-	log.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	logger.Info.Printf("The server is running on port : %s\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

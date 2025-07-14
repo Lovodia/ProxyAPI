@@ -13,7 +13,7 @@ type Handler struct {
 	Client *client.HTTPClient
 }
 
-func NewHandler(c *client.HTTPClient) *Handler {
+func New(c *client.HTTPClient) *Handler {
 	return &Handler{Client: c}
 }
 func (h *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {

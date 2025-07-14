@@ -5,15 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Lovodia/ProxyAPI/internal/models"
 	"github.com/go-resty/resty/v2"
 )
-
-type Post struct {
-	UserID int    `json:"userId"`
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Body   string `json:"body"`
-}
 
 type HTTPClient struct {
 	BaseURL string
@@ -32,21 +26,24 @@ func NewClient(BaseURL string) *HTTPClient {
 	}
 }
 
-func (c *HTTPClient) GetPost(ctx context.Context, id int) (*Post, error) {
+func (c *HTTPClient) GetPost(ctx context.Context, id int) (post *models.Post, err error) {
 	url := fmt.Sprintf("%sposts/%d", c.BaseURL, id)
 
-	var post Post
+	post = &models.Post{}
 	resp, err := c.client.R().
 		SetContext(ctx).
-		SetResult(&post).
+		SetResult(post).
 		Get(url)
 
 	if err != nil {
-		return nil, fmt.Errorf("request error: %w", err)
+		err = fmt.Errorf("request error: %w", err)
+		return
 	}
 
 	if resp.IsError() {
-		return nil, fmt.Errorf("enexpected status: %s", resp.Status())
+		err = fmt.Errorf("unexpected status: %s", resp.Status())
+		return
 	}
-	return &post, nil
+
+	return
 }
