@@ -1,16 +1,29 @@
 package logger
 
 import (
-	"log"
+	"log/slog"
 	"os"
+	"strings"
 )
 
-var (
-	Info  *log.Logger
-	Error *log.Logger
-)
+func NewLogger(levelStr string) *slog.Logger {
+	var logLevel slog.Level
+	switch strings.ToLower(levelStr) {
+	case "debug":
+		logLevel = slog.LevelDebug
+	case "info":
+		logLevel = slog.LevelInfo
+	case "warn":
+		logLevel = slog.LevelWarn
+	case "error":
+		logLevel = slog.LevelError
+	default:
+		logLevel = slog.LevelInfo
+	}
 
-func Init() {
-	Info = log.New(os.Stdout, "[INFO]", log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(os.Stderr, "[ERROR]", log.Ldate|log.Ltime|log.Lshortfile)
+	opts := &slog.HandlerOptions{
+		Level: logLevel,
+	}
+
+	return slog.New(slog.NewTextHandler(os.Stderr, opts))
 }

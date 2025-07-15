@@ -1,48 +1,35 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/Lovodia/ProxyAPI/internal/client"
 	"github.com/Lovodia/ProxyAPI/internal/handlers"
-	"github.com/Lovodia/ProxyAPI/pkg/config"
+	"github.com/Lovodia/ProxyAPI/internal/parse"
 	"github.com/Lovodia/ProxyAPI/pkg/logger"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	logger.Init()
-
-	_ = godotenv.Load(".env")
-
-	cfg, err := config.LoadConfig("config.yaml")
+	cfg, err := parse.LoadConfig()
 	if err != nil {
-		logger.Error.Println("failed to load config.yaml", err)
+		slog.Error("failed to load config", "error", err)
+		os.Exit(1)
 	}
 
-	apiURL := cfg.API.BaseURL
-	if envURL := os.Getenv("API_BASE_URL"); envURL != "" {
-		apiURL = envURL
-	}
-	if apiURL == "" {
-		apiURL = "https://jsonplaceholder.typicode.com/"
-	}
+	logger := logger.NewLogger(cfg.LogLevel)
+	slog.SetDefault(logger)
 
-	port := cfg.Server.Port
-	if envPort := os.Getenv("PORT"); envPort != "" {
-		port = envPort
-	}
-	if port == "" {
-		port = "8080"
-	}
+	slog.Info("Logger initialized", "level", cfg.LogLevel)
 
-	httpClient := client.NewClient(apiURL)
+	httpClient := client.NewClient(cfg.APIBaseURL)
 	h := handlers.New(httpClient)
 
 	http.HandleFunc("/post", h.GetPostHandler)
 
-	logger.Info.Printf("The server is running on port : %s\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	slog.Info("The server is running", "port", cfg.Port)
+	if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
+		slog.Error("server failed", "error", err)
+	}
 }
