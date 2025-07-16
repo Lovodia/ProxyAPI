@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
 
 	"github.com/Lovodia/ProxyAPI/pkg/config"
 	"github.com/joho/godotenv"
@@ -13,10 +15,32 @@ type ParsedConfig struct {
 	APIBaseURL string
 	Port       string
 	LogLevel   string
+	Timeout    time.Duration
+	RetryCount int
 }
 
-func LoadConfig() (ParsedConfig, error) {
-	var cfg ParsedConfig
+func LoadConfig() (*ParsedConfig, error) {
+	cfg := &ParsedConfig{}
+
+	timeoutStr := os.Getenv("TIMEOUT_SECONDS")
+	if timeoutStr == "" {
+		timeoutStr = ""
+	}
+	timeoutSec, err := strconv.Atoi(timeoutStr)
+	if err != nil {
+		timeoutSec = 10
+	}
+	cfg.Timeout = time.Duration(timeoutSec) * time.Second
+
+	retryStr := os.Getenv("RETRY_COUNT")
+	if retryStr == "" {
+		retryStr = "3"
+	}
+	retryCount, err := strconv.Atoi(retryStr)
+	if err != nil {
+		retryCount = 3
+	}
+	cfg.RetryCount = retryCount
 
 	envPath := os.Getenv("ENV_PATH")
 	if envPath == "" {
@@ -58,5 +82,5 @@ func LoadConfig() (ParsedConfig, error) {
 		}
 	}
 
-	return cfg, fmt.Errorf("missing required config: API_BASE_URL and/or PORT")
+	return nil, fmt.Errorf("missing required config: API_BASE_URL and/or PORT")
 }

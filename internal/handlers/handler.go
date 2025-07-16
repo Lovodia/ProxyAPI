@@ -10,12 +10,24 @@ import (
 )
 
 type Handler struct {
-	Client *client.HTTPClient
+	Client client.PostGetter
 }
 
 func New(c *client.HTTPClient) *Handler {
 	return &Handler{Client: c}
 }
+
+// GetPostHandler godoc
+// @Summary Получить пост по ID
+// @Description Проксирует запрос к внешнему API (jsonplaceholder)
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id query int true "ID поста"
+// @Success 200 {object} models.Post
+// @Failure 400 {string} string "Неверный запрос (например, отсутствует параметр id)"
+// @Failure 500 {string} string "Ошибка при запросе к внешнему API"
+// @Router /post [get]
 func (h *Handler) GetPostHandler(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {

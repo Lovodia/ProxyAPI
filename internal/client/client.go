@@ -3,25 +3,29 @@ package client
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Lovodia/ProxyAPI/internal/models"
+	"github.com/Lovodia/ProxyAPI/internal/parse"
 	"github.com/go-resty/resty/v2"
 )
+
+type PostGetter interface {
+	GetPost(ctx context.Context, id int) (*models.Post, error) // для подмены клиента в тестах
+}
 
 type HTTPClient struct {
 	BaseURL string
 	client  *resty.Client
 }
 
-func NewClient(BaseURL string) *HTTPClient {
+func NewClient(cfg *parse.ParsedConfig) *HTTPClient {
 	client := resty.New().
-		SetTimeout(10*time.Second).
-		SetRetryCount(3).
+		SetTimeout(cfg.Timeout).
+		SetRetryCount(cfg.RetryCount).
 		SetHeader("Accept", "application/json")
 
 	return &HTTPClient{
-		BaseURL: BaseURL,
+		BaseURL: cfg.APIBaseURL,
 		client:  client,
 	}
 }
