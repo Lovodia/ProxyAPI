@@ -50,7 +50,7 @@ docker-build-nocache:
 # Docker: запуск контейнера
 docker-run:
 	@echo "Running Docker container on port $(PORT)..."
-	docker run -p $(PORT):$(PORT) $(BINARY_NAME)
+	docker run -p $(PORT):$(PORT) --env-file .env $(BINARY_NAME)
 
 # Docker Compose: сборка
 dc-build:
