@@ -58,7 +58,7 @@ func LoadConfig() (*ParsedConfig, error) {
 
 	yamlFiles, err := filepath.Glob("*.y*ml")
 	if err != nil {
-		return cfg, fmt.Errorf("failed to scan YAML files: %w", err)
+		return nil, fmt.Errorf("failed to scan YAML files: %w", err)
 	}
 
 	for _, file := range yamlFiles {
