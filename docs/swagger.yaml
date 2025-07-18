@@ -1,0 +1,61 @@
+basePath: /
+definitions:
+  models.Post:
+    properties:
+      body:
+        example: Post content
+        type: string
+      id:
+        example: 1
+        type: integer
+      title:
+        example: My Title
+        type: string
+      userId:
+        example: 1
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: Пример прокси сервера на Go с документацией Swagger
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Proxy API
+  version: "1.0"
+paths:
+  /post:
+    get:
+      consumes:
+      - application/json
+      description: Проксирует запрос к внешнему API (jsonplaceholder)
+      parameters:
+      - description: ID поста
+        in: query
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Неверный запрос (например, отсутствует параметр id)
+          schema:
+            type: string
+        "500":
+          description: Ошибка при запросе к внешнему API
+          schema:
+            type: string
+      summary: Получить пост по ID
+      tags:
+      - posts
+swagger: "2.0"
